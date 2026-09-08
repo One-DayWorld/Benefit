@@ -39,6 +39,27 @@ export const ActionPlan: React.FC<ActionPlanProps> = ({ strategy }) => {
           <span>断缴提示：完全断缴将导致医疗保险断缴失效，突发疾病将无法享受医保报销，建议至少单独缴纳基本医疗保险。</span>
         </div>
       )}
+
+      {/* 法定门槛与政策资格提示 */}
+      {strategy.warnings.length > 0 && (
+        <div className="space-y-2">
+          {strategy.warnings.map((w, idx) => (
+            <div
+              key={idx}
+              className="flex items-start space-x-2 text-xs bg-rose-50 text-rose-900 p-3 rounded-xl border border-rose-200 leading-relaxed"
+            >
+              <ShieldAlert className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+              <span>{w}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="text-[11px] text-slate-500 leading-relaxed border-t border-slate-100 pt-3">
+        免责声明：本工具为简化测算模型，社保缴费比例、补贴标准、失业金档次、医保最低年限等
+        均存在显著地区差异且逐年调整，模型中部分参数为全国近似值。测算结果仅供规划参考，
+        <strong className="text-slate-700">不构成法律或财务建议</strong>，实际待遇以当地社保经办机构核定为准。
+      </p>
     </div>
   );
 };

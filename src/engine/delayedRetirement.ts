@@ -1,6 +1,7 @@
 export interface DelayedRetirementResult {
   originalAge: number;     // 原法定退休年龄 (50/55/60)
-  targetAge: number;       // 延迟后退休年龄
+  targetAge: number;       // 延迟后退休年龄 (精确值，如 60岁3个月 = 60.25)
+  targetAgeLabel: string;  // 延迟后退休年龄的展示文本 (如 "60岁3个月")
   delayMonths: number;     // 延迟月数
   retireYearMonth: string; // 预计退休年月 YYYY-MM
 }
@@ -43,6 +44,7 @@ export function calculateDelayedRetirement(
     return {
       originalAge,
       targetAge: originalAge,
+      targetAgeLabel: formatAge(originalAge, 0),
       delayMonths: 0,
       retireYearMonth: `${origRetireYear}-${String(origRetireMonth).padStart(2, '0')}`,
     };
@@ -58,12 +60,23 @@ export function calculateDelayedRetirement(
   const finalRetireYear = Math.floor((finalRetireTotalMonths - 1) / 12);
   const finalRetireMonth = ((finalRetireTotalMonths - 1) % 12) + 1;
 
-  const targetAge = Number((originalAge + delayMonths / 12).toFixed(1));
+  // 不可用 toFixed(1) 截断：60岁3个月(60.25) 会被压成 60.3，回算即 60岁3.6个月，
+  // 该误差会随 retireAge 传导到 monthsToRetire 与计发月数，故保留精确值，
+  // 显示交由 targetAgeLabel 处理。
+  const targetAge = originalAge + delayMonths / 12;
 
   return {
     originalAge,
     targetAge,
+    targetAgeLabel: formatAge(originalAge, delayMonths),
     delayMonths,
     retireYearMonth: `${finalRetireYear}-${String(finalRetireMonth).padStart(2, '0')}`,
   };
+}
+
+/** 把"整岁 + 延迟月数"格式化为 "60岁3个月" 这类无歧义的展示文本 */
+export function formatAge(originalAge: number, delayMonths: number): string {
+  const years = originalAge + Math.floor(delayMonths / 12);
+  const months = delayMonths % 12;
+  return months === 0 ? `${years}岁` : `${years}岁${months}个月`;
 }

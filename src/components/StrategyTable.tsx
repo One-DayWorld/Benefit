@@ -1,5 +1,6 @@
 import React from 'react';
 import { StrategyResult } from '../types';
+import { PensionSplit } from './PensionSplit';
 import { CheckCircle2 } from 'lucide-react';
 
 interface StrategyTableProps {
@@ -28,7 +29,12 @@ export const StrategyTable: React.FC<StrategyTableProps> = ({
               <th className="px-2.5 py-3 whitespace-nowrap">自费总支出</th>
               <th className="px-2.5 py-3 whitespace-nowrap">补贴/失业金收益</th>
               <th className="px-2.5 py-3 whitespace-nowrap">净投入成本</th>
-              <th className="px-2.5 py-3 whitespace-nowrap">退休首月养老金</th>
+              <th className="px-2.5 py-3 whitespace-nowrap min-w-[150px]">
+                退休首月养老金
+                <span className="block text-[10px] font-medium normal-case text-slate-400">
+                  基础 / 个人账户 构成
+                </span>
+              </th>
               <th className="px-2.5 py-3 whitespace-nowrap">回本年限</th>
               <th className="px-2.5 py-3 whitespace-nowrap">80岁累计领取</th>
             </tr>
@@ -72,12 +78,31 @@ export const StrategyTable: React.FC<StrategyTableProps> = ({
                   <td className="px-2.5 py-3 font-bold text-slate-800 whitespace-nowrap">
                     ¥{s.netCost.toLocaleString()}
                   </td>
-                  <td className="px-2.5 py-3 text-indigo-600 font-extrabold text-xs md:text-sm whitespace-nowrap">
-                    <span>¥{s.retireMonthlyPension.toLocaleString()}</span>
-                    <span className="text-[11px] font-semibold text-indigo-500 ml-0.5">/月</span>
+                  <td className="px-2.5 py-3 text-indigo-600 font-extrabold text-xs md:text-sm">
+                    {s.isPensionEligible ? (
+                      <>
+                        <span className="whitespace-nowrap">
+                          ¥{s.retireMonthlyPension.toLocaleString()}
+                          <span className="text-[11px] font-semibold text-indigo-500 ml-0.5">
+                            /月
+                          </span>
+                        </span>
+                        <PensionSplit
+                          basic={s.retireBasicPension}
+                          personal={s.retirePersonalPension}
+                          compact
+                        />
+                      </>
+                    ) : (
+                      <span className="text-rose-600 font-bold text-xs">不足15年·无法按月领取</span>
+                    )}
                   </td>
                   <td className="px-2.5 py-3 font-bold text-slate-800 whitespace-nowrap">
-                    {s.breakEvenYears > 0 ? `${s.breakEvenYears} 年` : '-'}
+                    {!Number.isFinite(s.breakEvenYears)
+                      ? '不划算'
+                      : s.breakEvenYears > 0
+                      ? `${s.breakEvenYears} 年`
+                      : '-'}
                   </td>
                   <td className="px-2.5 py-3 text-slate-800 font-bold whitespace-nowrap">
                     ¥{s.totalReceivedAt80.toLocaleString()}

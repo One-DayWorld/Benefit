@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserInputs } from './types';
 import { CITIES } from './config/cities';
-import { calculateStrategies } from './engine/policy';
+import { calculateStrategies, currentYearMonth } from './engine/policy';
 import { calculateDelayedRetirement } from './engine/delayedRetirement';
 import { InputsPanel } from './components/InputsPanel';
 import { KPICards } from './components/KPICards';
@@ -15,12 +15,17 @@ const DEFAULT_INPUTS: UserInputs = {
   gender: 'male',
   birthYearMonth: '1980-01',
   resignYearMonth: '2026-06',
+  // 已缴月数与个人账户余额默认视为"截至当月"的存量值
+  dataAsOfYearMonth: currentYearMonth(),
+  separationType: 'involuntary',
   retireAge: 61.5,
   paidMonths: 216,
   personalAccountBalance: 120000,
   avgPayIndex: 1.0,
   cityId: 'shanghai',
   futureSalaryGrowthRate: 0.03,
+  pensionIndexationRate: 0.02,
+  personalAccountInterestRate: 0.03,
 };
 
 export const App: React.FC = () => {
@@ -32,7 +37,8 @@ export const App: React.FC = () => {
         if (!parsed.paidMonths && parsed.paidYears) {
           parsed.paidMonths = Math.round(parsed.paidYears * 12);
         }
-        return parsed;
+        // 补齐旧版本档案缺失的字段
+        return { ...DEFAULT_INPUTS, ...parsed };
       } catch (e) {
         // fallback
       }
@@ -90,7 +96,7 @@ export const App: React.FC = () => {
 
           <div className="flex items-center space-x-2 text-xs bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-100 font-medium">
             <Sparkles className="w-4 h-4 text-indigo-500" />
-            <span>智能政策规避与福利规划</span>
+            <span>合规政策适配与福利规划</span>
           </div>
         </div>
       </header>
@@ -112,7 +118,7 @@ export const App: React.FC = () => {
 
           {/* 右侧数据展示 */}
           <div className="lg:col-span-8 space-y-6">
-            <KPICards strategies={strategies} />
+            <KPICards strategies={strategies} selectedId={selectedStrategyId} />
             <StrategyTable
               strategies={strategies}
               selectedId={selectedStrategyId}
